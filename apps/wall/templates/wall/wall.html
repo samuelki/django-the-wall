@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Home</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    {% load static %}
+	<link rel="stylesheet" type="text/css" href="{% static 'wall/css/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        {% if messages %}
+        <ul class="flashes">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        <a href="/logout" class="logout">Logout</a>
+        <h5>Welcome, {{ user.first_name }}.</h5>
+        <p>User ID: {{ request.session.id }}</p>
+        <p>First Name: {{ user.first_name }}</p>
+        <p>Last Name: {{ user.last_name }}</p>
+        <p>Email: {{ user.email }}</p>
+
+        <form action="/add_message" method="POST">
+            {% csrf_token %}
+            <h3>Post a message</h3>
+            <textarea name="add_message" rows="4"></textarea>
+            <input type="submit" value="Post Message" class="btn btn-primary post">
+        </form>
+
+        <h3>Messages:</h3>
+        {% if post_data %}
+            {% for post in post_data %}
+            <h6>{{ post.user.first_name }} {{ post.user.last_name }} -- {{ post.created_at }}</h6>
+            <p class="messages">{{ post.message }}</p>
+            <!-- DELETE -->
+            {% if post.user.id == request.sesssion.id %}
+            <a href="/message/{{post.id}}/delete">Delete</a>
+            {% endif %}
+
+            <div class="comments">
+                {% if comment_data %}
+                    {% for comment in comment_data %}
+                        {% if comment.message.id == post.id %}
+                        <h6>{{ comment.user.first_name }} {{ comment.user.last_name }} -- {{ comment.created_at }}</h6>
+                        <p>{{ comment.comment }}</p>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+
+                <form action="/comment" method="POST">
+                    {% csrf_token %}
+                    <p>Post a comment</p>
+                    <input type="hidden" value={{post.id}} name="message_ID">
+                    <textarea name="comment" cols="100" rows="5"></textarea>
+                    <input type="submit" value="Post Comment">
+                </form>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</body>
+</html>
